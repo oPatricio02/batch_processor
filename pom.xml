@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com</groupId>
-	<artifactId>batch.processor</artifactId>
+	<artifactId>batch_processor</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>batch.processor</name>
 	<description>O projeto tem como foco processar uma base de dados legado com milhares de linhas, com utilização do spring batch para não haver sobrecarga em banco nem na aplicação</description>
