@@ -1,12 +1,10 @@
 package com.batch.processor.domain.mapper;
 
-import com.batch.processor.domain.dto.FatoPedidoDTO;
 import com.batch.processor.domain.dto.FatoPedidoRaw;
 import org.springframework.jdbc.core.RowMapper;
-
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 
 public class FatoPedidoRawRowMapper implements RowMapper<FatoPedidoRaw> {
 
@@ -21,10 +19,10 @@ public class FatoPedidoRawRowMapper implements RowMapper<FatoPedidoRaw> {
         raw.setFreightValue(rs.getBigDecimal("freight_value"));
         raw.setCustomerId(rs.getString("customer_id"));
         raw.setPurchaseTimestamp(rs.getTimestamp("order_purchase_timestamp").toLocalDateTime());
-        raw.setApprovedAt(rs.getTimestamp("order_approved_at") != null ? rs.getTimestamp("order_approved_at").toLocalDateTime() : null);
-        raw.setDeliveredCarrierDate(rs.getTimestamp("order_delivered_carrier_date") != null ? rs.getTimestamp("order_delivered_carrier_date").toLocalDateTime() : null);
-        raw.setDeliveredCustomerDate(rs.getTimestamp("order_delivered_customer_date") != null ? rs.getTimestamp("order_delivered_customer_date").toLocalDateTime() : null);
-        raw.setEstimatedDeliveryDate(rs.getTimestamp("order_estimated_delivery_date") != null ? rs.getTimestamp("order_estimated_delivery_date").toLocalDateTime() : null);
+        raw.setApprovedAt(getDataTime("order_approved_at", rs));
+        raw.setDeliveredCarrierDate(getDataTime("order_delivered_carrier_date",rs));
+        raw.setDeliveredCustomerDate(getDataTime("order_delivered_customer_date", rs));
+        raw.setEstimatedDeliveryDate(getDataTime("order_estimated_delivery_date", rs));
         raw.setCustomerUniqueId(rs.getString("customer_unique_id"));
         raw.setCustomerCity(rs.getString("customer_city"));
         raw.setCustomerState(rs.getString("customer_state"));
@@ -33,6 +31,12 @@ public class FatoPedidoRawRowMapper implements RowMapper<FatoPedidoRaw> {
         raw.setPaymentInstallments(rs.getInt("payment_installments"));
         raw.setReviewScore(rs.getInt("review_score"));
         return raw;
+    }
+
+    private LocalDateTime getDataTime(String campo, ResultSet rs) throws SQLException {
+        return rs.getTimestamp(campo) != null
+                ? rs.getTimestamp(campo).toLocalDateTime()
+                : null;
     }
 
 }

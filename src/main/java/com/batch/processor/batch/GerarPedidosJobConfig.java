@@ -66,8 +66,6 @@ public class GerarPedidosJobConfig {
                 .build();
     }
 
-
-
     @Bean
     public JdbcPagingItemReader<FatoPedidoRaw> fatoPedidoReader(
             @Qualifier("appDataSource") DataSource appDataSource) throws Exception {
