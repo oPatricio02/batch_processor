@@ -111,7 +111,7 @@ public class GerarPedidosJobConfig {
                                             data_compra, data_aprovacao, data_entrega_transportadora, data_entrega_cliente, data_estimada_entrega,
                                             tempo_entrega_dias, diferenca_dias_entrega_estimada,
                                             preco_item, valor_frete, tipo_pagamento, parcelas_pagamento, nota_avaliacao)
-                                            VALUES (:itemPedido, :idPedido, :idClienteUnico, :idProduto, :idVendedor,
+                                            VALUES (:idItemPedido, :idPedido, :idClienteUnico, :idProduto, :idVendedor,
                                             :cidadeCliente, :estadoCliente, :categoriaProduto, :categoriaProdutoIngles,
                                             :dataCompra, :dataAprovacao, :dataEntregaTransportadora, :dataEntregaCliente, :dataEstimadaEntrega,
                                             :diasEntrega, :diasDiferencaEntregaEstimativa,

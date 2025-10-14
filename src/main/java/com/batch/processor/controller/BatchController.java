@@ -22,8 +22,9 @@ public class BatchController {
 
     @PostMapping
     public ResponseEntity<String> executarBatch(){
-        service.executar();
         log.info("Job Iniciado as {}", LocalDateTime.now());
+        service.executar();
+        log.info("Job Finalizado as {}", LocalDateTime.now());
         return ResponseEntity.accepted().body("Job iniciado de forma assincrona com sucesso!");
     }
 

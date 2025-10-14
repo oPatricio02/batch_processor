@@ -60,7 +60,7 @@ public class FatoPedidoProcessor implements ItemProcessor<FatoPedidoRaw, FatoPed
     private Integer diferencaDatas(LocalDateTime dt1, LocalDateTime dt2) {
         return (dt1 == null || dt2 == null)
                 ? null
-                : (int) ChronoUnit.DAYS.between(dt1, dt2);
+                : (int) Math.abs(ChronoUnit.DAYS.between(dt1, dt2));
     }
 
 }

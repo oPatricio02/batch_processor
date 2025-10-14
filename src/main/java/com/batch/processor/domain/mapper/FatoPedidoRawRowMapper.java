@@ -5,6 +5,7 @@ import org.springframework.jdbc.core.RowMapper;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class FatoPedidoRawRowMapper implements RowMapper<FatoPedidoRaw> {
 
@@ -18,7 +19,7 @@ public class FatoPedidoRawRowMapper implements RowMapper<FatoPedidoRaw> {
         raw.setPrice(rs.getBigDecimal("price"));
         raw.setFreightValue(rs.getBigDecimal("freight_value"));
         raw.setCustomerId(rs.getString("customer_id"));
-        raw.setPurchaseTimestamp(rs.getTimestamp("order_purchase_timestamp").toLocalDateTime());
+        raw.setPurchaseTimestamp(stringToDate(rs.getString("order_purchase_timestamp")));
         raw.setApprovedAt(getDataTime("order_approved_at", rs));
         raw.setDeliveredCarrierDate(getDataTime("order_delivered_carrier_date",rs));
         raw.setDeliveredCustomerDate(getDataTime("order_delivered_customer_date", rs));
@@ -34,9 +35,15 @@ public class FatoPedidoRawRowMapper implements RowMapper<FatoPedidoRaw> {
     }
 
     private LocalDateTime getDataTime(String campo, ResultSet rs) throws SQLException {
-        return rs.getTimestamp(campo) != null
-                ? rs.getTimestamp(campo).toLocalDateTime()
+        String valor = rs.getString(campo);
+        return (valor != null && !valor.isBlank())
+                ? stringToDate(valor)
                 : null;
+    }
+
+    private LocalDateTime stringToDate(String data){
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        return LocalDateTime.parse(data, formatter);
     }
 
 }
