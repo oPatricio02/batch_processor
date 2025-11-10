@@ -1,7 +1,9 @@
 package com.batch.processor.batch.listener;
 
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.*;
+import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -9,27 +11,24 @@ import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 
 @Component
-@Slf4j
-public class JobLogListener implements JobExecutionListener, StepExecutionListener {
+
+public class JobLogListener implements JobExecutionListener, ChunkListener {
+
+    private static final Logger MONITOR_LOG = LoggerFactory.getLogger("MONITORAMENTO_BATCH");
 
     @Override
-    public ExitStatus afterStep(StepExecution stepExecution) {
-        log.info("Step '{}' finalizado - Lidos: {}, Escritos: {}, Pulados: {}, Tempo: {} ms, Status: {}",
-                stepExecution.getStepName(),
-                stepExecution.getReadCount(),
-                stepExecution.getWriteCount(),
-                stepExecution.getSkipCount(),
-                timePerStep(stepExecution.getStartTime(), stepExecution.getEndTime()),
-                stepExecution.getExitStatus().getExitCode());
+    public void afterChunk(ChunkContext context) {
+        long lidos = context.getStepContext().getStepExecution().getReadCount();
+        long escritos = context.getStepContext().getStepExecution().getWriteCount();
 
-        return stepExecution.getExitStatus();
+        MONITOR_LOG.info("Progresso parcial - Lidos: {}, Escritos: {}", lidos, escritos );
     }
 
     @Override
     public void afterJob(JobExecution jobExecution) {
         var duracao = ChronoUnit.SECONDS.between(Objects.requireNonNull(jobExecution.getStartTime()), jobExecution.getEndTime());
 
-        log.info("Job finalizado - Status: {} , Tempo de execução: {} segundos", jobExecution.getStatus(),duracao);
+        MONITOR_LOG.info("Job finalizado - Status: {} , Tempo de execução: {} segundos", jobExecution.getStatus(),duracao);
     }
 
     private Integer timePerStep(LocalDateTime start, LocalDateTime end){
