@@ -13,7 +13,6 @@ public class AppDataSourceProperties {
     private String password;
     private String driverClassName;
 
-    // Objeto aninhado para as propriedades do Hikari
     private Hikari hikari = new Hikari();
 
     @Data
@@ -36,7 +35,7 @@ public class AppDataSourceProperties {
                 .driverClassName(this.driverClassName)
                 .build();
 
-        // Configura as propriedades do Hikari
+
         dataSource.setPoolName(this.hikari.getPoolName());
         dataSource.setMaximumPoolSize(this.hikari.getMaximumPoolSize());
         dataSource.setMinimumIdle(this.hikari.getMinimumIdle());
