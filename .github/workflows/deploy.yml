@@ -30,7 +30,10 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
-          script: mkdir -p ${{ secrets.APP_PATH }}
+          script: |
+            APP_PATH="${{ secrets.APP_PATH }}"
+            echo "Criando pasta: '$APP_PATH'"
+            mkdir -p "$APP_PATH"
 
       - name: Copiar JAR para a VM
         uses: appleboy/scp-action@v0.1.7
