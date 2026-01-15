@@ -32,6 +32,7 @@ jobs:
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           source: target/*.jar
           target: ${{ secrets.APP_PATH }}
+          strip_components: 1
 
       - name: Subir nova versão do batch
         uses: appleboy/ssh-action@v1.0.3
