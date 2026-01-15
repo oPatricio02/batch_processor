@@ -22,6 +22,16 @@ jobs:
       - name: Build do projeto
         run: mvn clean package -DskipTests
 
+      - name: Criar pasta na VM se não existir
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          script: mkdir -p ${{ secrets.APP_PATH }}
+
       - name: Copiar JAR para a VM
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -30,9 +40,8 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
-          source: target/*.jar
+          source: target/batch_processor-0.0.1-SNAPSHOT.jar
           target: ${{ secrets.APP_PATH }}
-          strip_components: 1
 
       - name: Subir nova versão do batch
         uses: appleboy/ssh-action@v1.0.3
@@ -44,5 +53,5 @@ jobs:
           script: |
             cd ${{ secrets.APP_PATH }}
             pkill -f batch_processor || true
-            nohup java -jar *.jar > batch.log 2>&1 &
+            nohup java -jar batch_processor-0.0.1-SNAPSHOT.jar > batch.log 2>&1 &
 
