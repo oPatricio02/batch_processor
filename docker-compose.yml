@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   legado-db:
@@ -15,6 +15,11 @@ services:
       - legado-db-data:/var/lib/mysql
     networks:
       - etl-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
 
   new-db:
     image: mysql:8.0
@@ -30,15 +35,19 @@ services:
       - novo-db-data:/var/lib/mysql
     networks:
       - etl-network
-
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
 
   elasticsearch:
     image: elasticsearch:8.14.1
     container_name: elasticsearch
     environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=false
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
     ports:
       - "9200:9200"
       - "9300:9300"
@@ -46,6 +55,11 @@ services:
       - es-data:/usr/share/elasticsearch/data
     networks:
       - etl-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:9200 >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
 
   logstash:
     image: logstash:8.14.1
@@ -55,7 +69,8 @@ services:
     volumes:
       - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
     depends_on:
-      - elasticsearch
+      elasticsearch:
+        condition: service_healthy
     networks:
       - etl-network
 
@@ -67,10 +82,10 @@ services:
     ports:
       - "5601:5601"
     depends_on:
-      - elasticsearch
+      elasticsearch:
+        condition: service_healthy
     networks:
       - etl-network
-
 
 volumes:
   legado-db-data:
