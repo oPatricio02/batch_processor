@@ -2,7 +2,7 @@ name: Deploy Batch Processor
 
 on:
   push:
-    branches: [ "master" ]
+    branches: ["master"]
   workflow_dispatch:
 
 jobs:
@@ -16,13 +16,13 @@ jobs:
       - name: Configurar Java
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '21'
+          distribution: temurin
+          java-version: "21"
 
       - name: Build do projeto
-        run: mvn clean package -DskipTests
+        run: mvn -B clean package -DskipTests
 
-      - name: Criar pasta na VM se não existir
+      - name: Criar pastas na VM (app + target)
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -30,12 +30,15 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          command_timeout: 5m
           script: |
+            set -e
             APP_PATH="${{ secrets.APP_PATH }}"
-            echo "Criando pasta: '$APP_PATH'"
+            echo "Criando pastas em: $APP_PATH"
             mkdir -p "$APP_PATH"
+            mkdir -p "$APP_PATH/target"
 
-      - name: Copiar JAR para a VM
+      - name: Copiar JAR para a VM (para a pasta target do systemd)
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -44,9 +47,9 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           source: target/batch_processor-0.0.1-SNAPSHOT.jar
-          target: ${{ secrets.APP_PATH }}
+          target: ${{ secrets.APP_PATH }}/target
 
-      - name: Subir nova versão do batch
+      - name: Reiniciar serviço via systemd
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -54,8 +57,16 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           port: ${{ secrets.SSH_PORT }}
+          command_timeout: 10m
           script: |
-            cd ${{ secrets.APP_PATH }}
-            pkill -f batch_processor || true
-            nohup java -jar batch_processor-0.0.1-SNAPSHOT.jar > batch.log 2>&1 &
+            set -e
+            sudo systemctl daemon-reload
 
+            # Reinicia e falha o deploy se não subir
+            sudo systemctl restart batch_processor
+
+            # Mostra status (útil pro log do Actions)
+            sudo systemctl --no-pager --full status batch_processor | head -n 120
+
+            # Confirma que está "active (running)"
+            systemctl is-active --quiet batch_processor || (echo "Serviço não ficou ativo. Logs:" && sudo journalctl -u batch_processor -n 200 --no-pager && exit 1)
